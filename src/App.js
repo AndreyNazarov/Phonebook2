@@ -1,25 +1,91 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import React, { Component } from "react";
+import { v4 as uuidv4 } from "uuid";
+import Form from "./components/Form/Form";
+import Contacts from "./components/Contacts/Contacts";
+import Filter from "./components/Filter/Filter";
+import Notification from "./components/Notifications/Notifications";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  state = {
+    contacts: [],
+    filter: "",
+  };
+
+  componentDidMount() {
+    const contacts = localStorage.getItem("contacts");
+    const parsedContacts = JSON.parse(contacts);
+
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
+    }
+  }
+  checkContact = (name, number) => {
+    const { contacts } = this.state;
+    const checkedContacts = contacts.some((el) => el.name === name);
+    if (checkedContacts) {
+      return alert("This contact is already in your contacts");
+    }
+    this.addContact(name, number);
+  };
+
+  addContact = (name, number) => {
+    const contactData = {
+      id: uuidv4(),
+      name: name,
+      number: number,
+    };
+    this.setState((prevState) => ({
+      contacts: [contactData, ...prevState.contacts],
+    }));
+  };
+
+  deleteContact = (id) => {
+    this.setState((prevState) => ({
+      contacts: prevState.contacts.filter((el) => el.id !== id),
+    }));
+  };
+
+  filterContacts = (e) => {
+    this.setState({ filter: e.target.value });
+  };
+
+  getVisibleContacts = () => {
+    const { filter, contacts } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter((el) =>
+      el.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  render() {
+    const { contacts, name, filter, number } = this.state;
+
+    return (
+      <div className="container">
+        <Form
+          name={name}
+          number={number}
+          contacts={contacts}
+          onChange={this.handleChange}
+          onSubmit={this.checkContact}
+        ></Form>
+        {contacts.length ? (
+          <Contacts
+            contacts={this.getVisibleContacts()}
+            onDelete={this.deleteContact}
+          >
+            <Filter value={filter} onChange={this.filterContacts}></Filter>
+          </Contacts>
+        ) : (
+          <Notification></Notification>
+        )}
+      </div>
+    );
+  }
 }
-
-export default App;
