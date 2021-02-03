@@ -1,5 +1,5 @@
 import React from "react";
-import s from "./Filter.module.css";
+import styles from "./Filter.module.css";
 import PropTypes from "prop-types";
 
 const Filter = ({ value, onChange }) => {
@@ -7,7 +7,7 @@ const Filter = ({ value, onChange }) => {
     <label>
       Find contacts by name
       <input
-        className={s.input}
+        className={styles.input}
         type="text"
         name="filter"
         placeholder="Find contact"
